@@ -22,7 +22,7 @@ import pandas as pd
 
 def get_sensor_ids(pg_connection_dict):
     '''
-    This function gets the sensor_ids of all sensors in our database that are not flagged.
+    This function gets the sensor_ids of all sensors in our database that are not flagged from previous days.
     Returns a pandas Series
     '''
 
@@ -33,7 +33,7 @@ def get_sensor_ids(pg_connection_dict):
 
     cmd = sql.SQL('''SELECT sensor_index 
     FROM "PurpleAir Stations"
-    WHERE channel_flags = 0 AND channel_state = 3; -- channel_flags are updated regularly, channel_state <- managed by someone - 3 = on, 0 = off
+    WHERE channel_flags = ANY (ARRAY[0,4]) AND channel_state = 3; -- channel_flags are updated regularly, channel_state <- managed by someone - 3 = on, 0 = off
     ''')
 
     cur.execute(cmd) # Execute
@@ -63,7 +63,7 @@ def flag_sensors(sensor_indices, pg_connection_dict):
     cur = conn.cursor()
 
     cmd = sql.SQL('''UPDATE "PurpleAir Stations"
-    SET channel_flags = 4
+    SET channel_flags = 4, last_seen = CURRENT_TIMESTAMP AT TIME ZONE 'America/Chicago'
     WHERE sensor_index = ANY ( {} );
     ''').format(sql.Literal(sensor_indices))
 

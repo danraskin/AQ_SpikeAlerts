@@ -4,6 +4,7 @@
 
 import os # For working with Operating System
 import requests # Accessing the Web
+from io import StringIO
 import datetime as dt # Working with dates/times
 
 # Database 
@@ -21,16 +22,65 @@ import pandas as pd
 # import Get_spikes_df as get_spikes
 exec(open('Get_spikes_df.py').read())
 
+# If in notebooks... 
+# exec(open(os.path.join(script_path, 'Get_spikes_df.py')).read())
+
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 # PurpleAir Stations
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~      
+
+def Get_last_PurpleAir_update(pg_connection_dict, timezone = 'America/Chicago'):
+    '''
+    This function gets the highest last_seen (only updated daily)
+    
+    returns timezone aware datetime
+    '''
+    # Connect
+    conn = psycopg2.connect(**pg_connection_dict) 
+    # Create cursor
+    cur = conn.cursor()
+
+    cmd = sql.SQL('''SELECT MAX(last_seen)
+    FROM "PurpleAir Stations"
+    WHERE channel_flags = 0;
+    ''')
+
+    cur.execute(cmd) # Execute
+    conn.commit() # Committ command
+
+    # Unpack response into timezone aware datetime
+
+    time = cur.fetchall()[0][0].replace(tzinfo=pytz.timezone(timezone))
+
+    # Close cursor
+    cur.close()
+    # Close connection
+    conn.close()
+    
+    return time
+    
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~      
+
 def Sensor_Information_Daily_Update(pg_connection_dict, purpleAir_api):
     '''
     This is the full workflow for updating our sensor information in the database. 
     Please see Daily_Updates.py for specifics on the functions
+    
+    test with 
+    
+    UPDATE "PurpleAir Stations"
+    SET channel_state = 3, channel_flags = 4;
+
+    DELETE FROM "PurpleAir Stations"
+    WHERE sensor_index = 143634;
+
+    UPDATE "PurpleAir Stations"
+    SET name = 'wrong_name'
+    WHERE sensor_index = 143916;
     '''
     # Load information from our database
     sensors_df = Get_our_sensor_info(pg_connection_dict) # Get our sensor info
@@ -50,7 +100,7 @@ def Sensor_Information_Daily_Update(pg_connection_dict, purpleAir_api):
                                  
     # Clean up datatypes
     merged['sensor_index'] = merged.sensor_index.astype(int)
-    merged['channel_state'] = merged.channel_state.astype(int)
+    merged['channel_state'] = merged.channel_state.astype("Int64")
     
     # Do the names match up?
     names_match = (merged.name_SpikeAlerts == merged.name_PurpleAir)
@@ -85,7 +135,7 @@ def Sensor_Information_Daily_Update(pg_connection_dict, purpleAir_api):
         ### Conditions
         name_controversy = (~no_name_PurpleAir & ~is_new_name) # Not new and not no name from PurpleAir
         # The dataframe under these conditions
-        name_controversy_df = diffName_df[name_controversy] # Has a different name!
+        name_controversy_df = diffName_df[name_controversy].copy() # Has a different name!
         if len(name_controversy_df.sensor_index) > 0:
             Update_name(name_controversy_df, pg_connection_dict)
             
@@ -119,11 +169,13 @@ def Sensor_Information_Daily_Update(pg_connection_dict, purpleAir_api):
 
         for i, condition in enumerate(conditions):
 
-            con_df = new_issue_df[new_issue_df.channel_flags_PurpleAir == i]
-
             if i == 0: # Only "serious" wifi issue if longer than 6 hours
 
-                con_df = con_df[(con_df.last_seen_PurpleAir < dt.datetime.now(pytz.timezone('America/Chicago')) - dt.timedelta(hours = 6))]
+                con_df = new_issue_df[(new_issue_df.channel_flags_PurpleAir == i
+                                        ) & (new_issue_df.last_seen_PurpleAir < dt.datetime.now(pytz.timezone('America/Chicago')) - dt.timedelta(hours = 6))]
+            
+            else:  
+                con_df = new_issue_df[new_issue_df.channel_flags_PurpleAir == i]
 
             for i, row in con_df.iterrows():
 
@@ -391,7 +443,7 @@ def Flag_channel_state(sensor_indices, pg_connection_dict):
     '''
     To be used on sensors that haven't been seen in a while...
     
-    Sets all channel_states to zero for the sensor_indices (a list of sensor_index/integers) in "PurpleAir Stations"
+    Sets all channel_states to zero and channel_flags to 3 for the sensor_indices (a list of sensor_index/integers) in "PurpleAir Stations"
     '''
     
     conn = psycopg2.connect(**pg_connection_dict)
@@ -400,7 +452,7 @@ def Flag_channel_state(sensor_indices, pg_connection_dict):
     cur = conn.cursor()
     
     cmd = sql.SQL('''UPDATE "PurpleAir Stations"
-SET channel_state = 0
+SET channel_state = 0, channel_flags = 3
 WHERE sensor_index = ANY ( {} );
     ''').format(sql.Literal(sensor_indices))
     
@@ -591,7 +643,7 @@ def Add_new_users_from_REDCap(max_record_id, redCap_token_signUp, pg_connection_
         # Create cursor
         cur = conn.cursor()
 
-        for i, row in final_df.iterrows():
+        for i, row in focus_df.iterrows():
 
             q1 = sql.SQL('INSERT INTO "Sign Up Information" ({}) VALUES ({},{});').format(
              sql.SQL(', ').join(map(sql.Identifier, cols_for_db)),
@@ -608,19 +660,15 @@ def Add_new_users_from_REDCap(max_record_id, redCap_token_signUp, pg_connection_
         # Commit commands
         conn.commit()
 
-        # Unpack response into pandas series
-
-        max_record_id = cur.fetchall()[0][0]
-
         # Close cursor
         cur.close()
         # Close connection
         conn.close()
 
-        print(len(final_df), ' new users')
+        print(len(focus_df), ' new users')
         
     else:
-        print('No new users')
+        print('0 new users')
     
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
