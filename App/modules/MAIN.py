@@ -69,7 +69,7 @@ from App.modules.db_conn import pg_connection_dict
 
 spike_threshold = int(35) # Value which defines an AQ_Spike (Micgrograms per meter cubed)
 
-timestep = int(1) # Sleep time in between updates (in seconds)
+timestep = int(10) # Sleep time in between updates (in seconds)
 
 # When to stop the program? (datetime)
 days_to_run = int(3) # How many days will we run this?
