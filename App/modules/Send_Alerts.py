@@ -30,16 +30,6 @@ load_dotenv()
 
 from App.modules.db_conn import pg_connection_dict
 
-# creds = [os.getenv('DB_NAME'),
-#          os.getenv('DB_USER'),
-#          os.getenv('DB_PASS'),
-#          os.getenv('DB_PORT'),
-#          os.getenv('DB_HOST'),
-#          os.getenv('DB_OPTIONS')
-#         ]
-# pg_connection_dict = dict(zip(['dbname', 'user', 'password', 'port', 'host','options'], creds)) 
-
-
 # Functions 
 
 def Users_nearby_sensor(pg_connection_dict, sensor_index, distance):

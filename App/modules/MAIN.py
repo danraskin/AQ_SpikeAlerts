@@ -57,12 +57,12 @@ load_dotenv() # Load .env file
 
 purpleAir_api = os.getenv('PURPLEAIR_API_TOKEN') # PurpleAir API Read Key
 
-# redCap_token_signUp = os.getenv('REDCAP_TOKEN_SIGNUP') # Survey Token
-# redCap_token_report = os.getenv('REDCAP_TOKEN_REPORT') # Report Token
+redCap_token_signUp = os.getenv('REDCAP_TOKEN_SIGNUP') # Survey Token
+redCap_token_report = os.getenv('REDCAP_TOKEN_REPORT') # Report Token
 
-# TWILIO_ACCOUNT_SID = os.getenv('TWILIO_ACCOUNT_SID') # Twilio Information
-# TWILIO_AUTH_TOKEN = os.getenv('TWILIO_AUTH_TOKEN')
-# TWILIO_NUMBER = os.getenv('TWILIO_NUMBER')
+TWILIO_ACCOUNT_SID = os.getenv('TWILIO_ACCOUNT_SID') # Twilio Information
+TWILIO_AUTH_TOKEN = os.getenv('TWILIO_AUTH_TOKEN')
+TWILIO_NUMBER = os.getenv('TWILIO_NUMBER')
 
 # Database credentials
 
@@ -271,10 +271,10 @@ def main_loop():
         
         if len(record_ids_to_text) > 0:
             
-            # send_all_messages(record_ids_to_text, messages,
-            #                   redCap_token_signUp,
-            #                   TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN, TWILIO_NUMBER,
-            #                   pg_connection_dict) # in Send_Alerts.py & .ipynb
+            send_all_messages(record_ids_to_text, messages,
+                              redCap_token_signUp,
+                              TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN, TWILIO_NUMBER,
+                              pg_connection_dict) # in Send_Alerts.py & .ipynb
             
             # Save them locally - for developers
             
@@ -300,6 +300,6 @@ def main_loop():
 
     # Terminate Program
 
-    # send_texts([os.environ['LOCAL_PHONE']], ['Terminating Program'], TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN, TWILIO_NUMBER)
+    send_texts([os.environ['LOCAL_PHONE']], ['Terminating Program'], TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN, TWILIO_NUMBER)
 
     print("Terminating Program")
