@@ -43,8 +43,8 @@ purpleAir_api = os.getenv('PURPLEAIR_API_TOKEN')
 script_path = os.path.join('App','modules')
 
 # Function definition - Please see Scripts/python/*
-exec(open(os.path.join(script_path, 'Get_spikes_df.py')).read())
-exec(open(os.path.join(script_path, 'Daily_Updates.py')).read())
+# exec(open(os.path.join(script_path, 'Get_spikes_df.py')).read())
+# exec(open(os.path.join(script_path, 'Daily_Updates.py')).read())
 # exec(open(os.path.join(script_path, 'Update_Alerts.py')).read())
 
 ### Definitions
@@ -136,101 +136,101 @@ def pg_get_boundary():
   ymax = num_string.split(' ')[2]
   return (xmin, ymin, xmax, ymax)
 
-def import_sensors_data(boundaries):
-  ## Imports sensor
+# def import_sensors_data(boundaries):
+#   ## Imports sensor
 
-  #Set bounding strings for API parameters
-  nwlng, selat, selng, nwlat = boundaries # Convert into PurpleAir API notation
-  bounds_strings = [f'nwlng={nwlng}',
-                    f'nwlat={nwlat}',
-                    f'selng={selng}',
-                    f'selat={selat}']
-  bounds_string = '&'.join(bounds_strings)
+#   #Set bounding strings for API parameters
+#   nwlng, selat, selng, nwlat = boundaries # Convert into PurpleAir API notation
+#   bounds_strings = [f'nwlng={nwlng}',
+#                     f'nwlat={nwlat}',
+#                     f'selng={selng}',
+#                     f'selat={selat}']
+#   bounds_string = '&'.join(bounds_strings)
 
-  #Setting parameters for API
-  # Fields
-  fields = ['firmware_version','date_created','last_modified','last_seen',
-            'name', 'uptime','position_rating','channel_state','channel_flags',
-            'altitude', 'latitude', 'longitude', 'location_type']
-  fields_string = 'fields=' + '%2C'.join(fields)
-  # Finalizing query for API function
-  query_string = '&'.join([fields_string, bounds_string])
-  #calling the API
-  return getSensorsData(query_string, purpleAir_api) # See Get_spikes_df.py
+#   #Setting parameters for API
+#   # Fields
+#   fields = ['firmware_version','date_created','last_modified','last_seen',
+#             'name', 'uptime','position_rating','channel_state','channel_flags',
+#             'altitude', 'latitude', 'longitude', 'location_type']
+#   fields_string = 'fields=' + '%2C'.join(fields)
+#   # Finalizing query for API function
+#   query_string = '&'.join([fields_string, bounds_string])
+#   #calling the API
+#   return getSensorsData(query_string, purpleAir_api) # See Get_spikes_df.py
 
-def format_sensor_data(response):
-  # Unpack response
-  response_dict = response.json() # Read response as a json (dictionary)
-  col_names = response_dict['fields']
-  data = np.array(response_dict['data'])
-  df = pd.DataFrame(data, columns = col_names) # Convert to dataframe
+# def format_sensor_data(response):
+#   # Unpack response
+#   response_dict = response.json() # Read response as a json (dictionary)
+#   col_names = response_dict['fields']
+#   data = np.array(response_dict['data'])
+#   df = pd.DataFrame(data, columns = col_names) # Convert to dataframe
 
-  # Correct Last Seen/modified/date created into datetimes
-  df['last_modified'] = pd.to_datetime(df['last_modified'].astype(int),
-                                              utc = True,
-                                              unit='s').dt.tz_convert('America/Chicago')
-  df['date_created'] = pd.to_datetime(df['date_created'].astype(int),
-                                          utc = True,
-                                          unit='s').dt.tz_convert('America/Chicago')
-  df['last_seen'] = pd.to_datetime(df['last_seen'].astype(int),
-                                          utc = True,
-                                          unit='s').dt.tz_convert('America/Chicago')
+#   # Correct Last Seen/modified/date created into datetimes
+#   df['last_modified'] = pd.to_datetime(df['last_modified'].astype(int),
+#                                               utc = True,
+#                                               unit='s').dt.tz_convert('America/Chicago')
+#   df['date_created'] = pd.to_datetime(df['date_created'].astype(int),
+#                                           utc = True,
+#                                           unit='s').dt.tz_convert('America/Chicago')
+#   df['last_seen'] = pd.to_datetime(df['last_seen'].astype(int),
+#                                           utc = True,
+#                                           unit='s').dt.tz_convert('America/Chicago')
 
-  # Make sure sensor_index/location_type is an integer
-  df['sensor_index'] = pd.to_numeric(df['sensor_index'])
-  df['location_type'] = pd.to_numeric(df['location_type'])
+#   # Make sure sensor_index/location_type is an integer
+#   df['sensor_index'] = pd.to_numeric(df['sensor_index'])
+#   df['location_type'] = pd.to_numeric(df['location_type'])
 
-  # Filter for City of Minneapolis & outside sensors
-  is_city = df.name.apply(lambda x: 'CITY OF MINNEAPOLIS' in x.upper())
-  is_outside = df.location_type == 0
-  purpleAir_df = df[is_city & is_outside].copy()
-  gdf = gpd.GeoDataFrame(purpleAir_df, 
-                            geometry = gpd.points_from_xy(
-                                purpleAir_df.longitude,
-                                purpleAir_df.latitude,
-                                crs = 'EPSG:4326')
-                          )
+#   # Filter for City of Minneapolis & outside sensors
+#   is_city = df.name.apply(lambda x: 'CITY OF MINNEAPOLIS' in x.upper())
+#   is_outside = df.location_type == 0
+#   purpleAir_df = df[is_city & is_outside].copy()
+#   gdf = gpd.GeoDataFrame(purpleAir_df, 
+#                             geometry = gpd.points_from_xy(
+#                                 purpleAir_df.longitude,
+#                                 purpleAir_df.latitude,
+#                                 crs = 'EPSG:4326')
+#                           )
   
-  #format for database
-  cols_for_db = ['sensor_index', 'firmware_version', 'date_created', 'last_modified', 'last_seen',
-  'name', 'uptime', 'position_rating', 'channel_state', 'channel_flags', 'altitude', 'geometry'] 
+#   #format for database
+#   cols_for_db = ['sensor_index', 'firmware_version', 'date_created', 'last_modified', 'last_seen',
+#   'name', 'uptime', 'position_rating', 'channel_state', 'channel_flags', 'altitude', 'geometry'] 
 
-  # Get values ready for database
-  sorted_df = gdf.copy()[cols_for_db[:-1]]  # Drop unneccessary columns & sort columns by cols_for db (without geometry - see next line)
+#   # Get values ready for database
+#   sorted_df = gdf.copy()[cols_for_db[:-1]]  # Drop unneccessary columns & sort columns by cols_for db (without geometry - see next line)
 
-  # Get Well Known Text of the geometry          
-  sorted_df['wkt'] = gdf.geometry.apply(lambda x: x.wkt)
+#   # Get Well Known Text of the geometry          
+#   sorted_df['wkt'] = gdf.geometry.apply(lambda x: x.wkt)
 
-  # Format the times
-  sorted_df['date_created'] = gdf.date_created.apply(lambda x : x.strftime('%Y-%m-%d %H:%M:%S'))
-  sorted_df['last_modified'] = gdf.last_modified.apply(lambda x : x.strftime('%Y-%m-%d %H:%M:%S'))
-  sorted_df['last_seen'] = gdf.last_seen.apply(lambda x : x.strftime('%Y-%m-%d %H:%M:%S'))
+#   # Format the times
+#   sorted_df['date_created'] = gdf.date_created.apply(lambda x : x.strftime('%Y-%m-%d %H:%M:%S'))
+#   sorted_df['last_modified'] = gdf.last_modified.apply(lambda x : x.strftime('%Y-%m-%d %H:%M:%S'))
+#   sorted_df['last_seen'] = gdf.last_seen.apply(lambda x : x.strftime('%Y-%m-%d %H:%M:%S'))
 
-  return (cols_for_db, sorted_df)
+#   return (cols_for_db, sorted_df)
 
-def pg_post_init_sensor_data(cols_for_db, sorted_df):
-  # Insert into database
-   # Connect to PostGIS Database
-  conn = psycopg2.connect(**pg_connection_dict)
-  cur = conn.cursor()
+# def pg_post_init_sensor_data(cols_for_db, sorted_df):
+#   # Insert into database
+#    # Connect to PostGIS Database
+#   conn = psycopg2.connect(**pg_connection_dict)
+#   cur = conn.cursor()
 
-  # iterate over the dataframe and insert each row into the database using a SQL INSERT statement
-  for index, row in sorted_df.copy().iterrows():
-      q1 = sql.SQL('INSERT INTO "PurpleAir Stations" ({}) VALUES ({},{});').format(
-      sql.SQL(', ').join(map(sql.Identifier, cols_for_db)),
-      sql.SQL(', ').join(sql.Placeholder() * (len(cols_for_db)-1)),
-      sql.SQL('ST_SetSRID(ST_GeomFromText(%s), 4326)::geometry'))
-      # print(q1.as_string(conn))
-      # print(row)
-      # break 
-      cur.execute(q1.as_string(conn),
-          (list(row.values))
-          )
-  # Commit commands
-  conn.commit()
-  # Close the cursor and connection
-  cur.close()
-  conn.close()
+#   # iterate over the dataframe and insert each row into the database using a SQL INSERT statement
+#   for index, row in sorted_df.copy().iterrows():
+#       q1 = sql.SQL('INSERT INTO "PurpleAir Stations" ({}) VALUES ({},{});').format(
+#       sql.SQL(', ').join(map(sql.Identifier, cols_for_db)),
+#       sql.SQL(', ').join(sql.Placeholder() * (len(cols_for_db)-1)),
+#       sql.SQL('ST_SetSRID(ST_GeomFromText(%s), 4326)::geometry'))
+#       # print(q1.as_string(conn))
+#       # print(row)
+#       # break 
+#       cur.execute(q1.as_string(conn),
+#           (list(row.values))
+#           )
+#   # Commit commands
+#   conn.commit()
+#   # Close the cursor and connection
+#   cur.close()
+#   conn.close()
 
 def db_need_init():
   conn = psycopg2.connect(**pg_connection_dict)
