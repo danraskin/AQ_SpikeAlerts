@@ -1,1 +1,1 @@
-worker: python App.aq_spikealerts.py
+worker: python aq_spikealerts.py
