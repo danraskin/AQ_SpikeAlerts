@@ -1,1 +1,1 @@
-web: gunicorn App.aq_spikealerts:app
+worker: python App.aq_spikealerts.py

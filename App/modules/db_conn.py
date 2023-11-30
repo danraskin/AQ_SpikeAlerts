@@ -22,5 +22,5 @@ creds = [os.getenv('DB_NAME'),
         os.getenv('DB_HOST')
         # os.getenv('DB_OPTIONS')
         ]
-print(creds)
+# print(creds)
 pg_connection_dict = dict(zip(['dbname', 'user', 'password', 'port', 'host'], creds))
