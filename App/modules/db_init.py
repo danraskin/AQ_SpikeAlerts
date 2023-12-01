@@ -29,23 +29,10 @@ cwd = os.getcwd()
 from dotenv import load_dotenv # Loading .env info
 load_dotenv() # Load .env file
 purpleAir_api = os.getenv('PURPLEAIR_API_TOKEN')
-# creds = [os.getenv('DB_NAME'),
-#          os.getenv('DB_USER'),
-#          os.getenv('DB_PASS'),
-#          os.getenv('DB_PORT'),
-#          os.getenv('DB_HOST'),
-#          os.getenv('DB_OPTIONS')
-#         ]
-# pg_connection_dict = dict(zip(['dbname', 'user', 'password', 'port', 'host', 'options'], creds)) 
 
 # Load our Functions
 
 script_path = os.path.join('App','modules')
-
-# Function definition - Please see Scripts/python/*
-# exec(open(os.path.join(script_path, 'Get_spikes_df.py')).read())
-# exec(open(os.path.join(script_path, 'Daily_Updates.py')).read())
-# exec(open(os.path.join(script_path, 'Update_Alerts.py')).read())
 
 ### Definitions
 

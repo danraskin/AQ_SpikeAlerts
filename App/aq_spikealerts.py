@@ -4,7 +4,7 @@ import os # For working with Operating System
 import sys
 from dotenv import load_dotenv # Loading .env info
 # from flask import Flask 
-from App.modules.db_init import db_init, db_need_init, db_notinit
+from App.modules.db_init import db_init, db_need_init
 from App.modules.MAIN import main_loop
 
 
