@@ -220,6 +220,7 @@ def pg_get_boundary():
 #   conn.close()
 
 def db_need_init():
+  print(pg_connection_dict)
   conn = psycopg2.connect(**pg_connection_dict)
   cur = conn.cursor()
   cur.execute('SELECT * FROM "Minneapolis Boundary"')

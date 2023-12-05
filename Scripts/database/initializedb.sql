@@ -11,8 +11,8 @@
 
 -- to run locally, uncomment these out. 
 
-CREATE EXTENSION postgis; -- Add spatial extensions
-CREATE EXTENSION postgis_topology;
+-- CREATE EXTENSION postgis; -- Add spatial extensions
+-- CREATE EXTENSION postgis_topology;
 
 CREATE table "Sign Up Information"
 	(user_index serial, first_name text, last_name text,

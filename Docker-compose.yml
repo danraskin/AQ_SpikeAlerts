@@ -8,6 +8,10 @@ services:
     volumes:
       - ./:/usr/app
     working_dir: /usr/app
+    expose:
+      - "5001"
+    ports:
+      - "5001:5001"
     depends_on:
       - db
   db:
@@ -18,7 +22,7 @@ services:
     ports:
       - "5434:5432"
     volumes:
-      - ./initializedb.sql:/docker-entrypoint-initdb.d/database.sql
+      - ./Database/initializedb.sql:/docker-entrypoint-initdb.d/database.sql
     environment:
       POSTGRES_PASSWORD: postgres
       POSTGRES_USER: AQspikealert
